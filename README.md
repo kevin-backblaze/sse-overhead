@@ -32,6 +32,17 @@ Set in `.env` file or environment:
 - `B2_ENDPOINT` – optional, default `https://s3.us-east-005.backblazeb2.com`  
 - `TEST_KEY` – optional base key name, default `meta-test.txt`
 
+
+## Quick Start with `.env.example`
+1. Copy the example file and edit your values
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Ensure `.env` is ignored by Git
+   ```bash
+   echo ".env" >> .gitignore
+   ```
 ## Usage
 ```bash
 node sse-overhead.mjs [options]
@@ -67,8 +78,8 @@ Estimated mean overhead added by SSE AES256
 ┌─────────┬────────────┬──────────────┐
 │ (index) │ operation  │ meanAddedMs  │
 ├─────────┼────────────┼──────────────┤
-│ 0       │ upload     │ 4            │
-│ 1       │ download   │ 1            │
+│ 0       │ upload     │ 0            │
+│ 1       │ download   │ 0            │
 └─────────┴────────────┴──────────────┘
 ```
 
