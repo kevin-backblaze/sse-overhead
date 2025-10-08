@@ -32,7 +32,6 @@ Set in `.env` file or environment:
 - `B2_ENDPOINT` – optional, default `https://s3.us-east-005.backblazeb2.com`  
 - `TEST_KEY` – optional base key name, default `meta-test.txt`
 
-
 ## Quick Start with `.env.example`
 1. Copy the example file and edit your values
    ```bash
@@ -43,6 +42,7 @@ Set in `.env` file or environment:
    ```bash
    echo ".env" >> .gitignore
    ```
+
 ## Usage
 ```bash
 node sse-overhead.mjs [options]
@@ -68,22 +68,33 @@ Results ms
 ┌─────────┬───────────────────────┬───────┬────────┬───────┬───────┬───────┐
 │ (index) │ name                  │ count │ meanMs │ p50Ms │ p95Ms │ p99Ms │
 ├─────────┼───────────────────────┼───────┼────────┼───────┼───────┼───────┤
-│ 0       │ upload no sse         │   50  │   520  │  512  │  610  │  645  │
-│ 1       │ upload sse aes256     │   50  │   524  │  514  │  615  │  652  │
-│ 2       │ download no sse       │   50  │   490  │  485  │  550  │  580  │
-│ 3       │ download sse aes256   │   50  │   491  │  486  │  552  │  581  │
+│ 0       │ 'upload no sse'       │ 100   │ 1127   │ 970   │ 1935  │ 3675  │
+│ 1       │ 'upload sse aes256'   │ 100   │ 1058   │ 963   │ 1856  │ 2333  │
+│ 2       │ 'download no sse'     │ 100   │ 526    │ 510   │ 787   │ 853   │
+│ 3       │ 'download sse aes256' │ 100   │ 525    │ 483   │ 793   │ 1052  │
 └─────────┴───────────────────────┴───────┴────────┴───────┴───────┴───────┘
 
 Estimated mean overhead added by SSE AES256
 ┌─────────┬────────────┬──────────────┐
 │ (index) │ operation  │ meanAddedMs  │
 ├─────────┼────────────┼──────────────┤
-│ 0       │ upload     │ 0            │
-│ 1       │ download   │ 0            │
+│ 0       │ 'upload'   │ 0            │
+│ 1       │ 'download' │ 0            │
 └─────────┴────────────┴──────────────┘
+
+Paired delta SSE minus no-SSE (ms) with 95% CI
+┌─────────┬────────────┬─────┬────────┬─────────┬──────────┐
+│ (index) │ operation  │ n   │ meanMs │ ciLowMs │ ciHighMs │
+├─────────┼────────────┼─────┼────────┼─────────┼──────────┤
+│ 0       │ 'upload'   │ 100 │ -69    │ -260    │ 123      │
+│ 1       │ 'download' │ 100 │ -1     │ -37     │ 35       │
+└─────────┴────────────┴─────┴────────┴─────────┴──────────┘
 ```
 
-## Notes
-- Negative or near-zero deltas mean no measurable overhead from SSE.  
-- If the 95% CI includes zero, the test does not show a significant difference.  
-- This test deletes all objects it creates. Do not run on production prefixes.
+## Interpreting Results
+- **Raw timings:** Uploads and downloads with and without SSE are nearly identical across mean, median (p50), and tail latencies (p95, p99).
+- **Estimated overhead:** The script reports `0 ms` overhead because differences are statistically insignificant. Negative or near-zero deltas mean there is no measurable overhead.
+- **Confidence intervals:** If the 95% CI includes zero, there is no significant difference. Small negative values (SSE appearing slightly faster) are just noise.
+
+### Plain-English Summary
+Enabling SSE AES-256 on Backblaze B2 showed **no measurable performance impact**. Upload and download speeds were effectively the same with or without encryption.
